@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kactus Booking System</title>
+<style>
+:root {
+    --primary: #7392a4; /* button highlight */
+    --secondary: #596858; /* price button */
+    --bg: #cfb48b; /* background */
+    --whatsapp: #688662; /* WhatsApp button */
+}
+body {
+    font-family: sans-serif;
+    background-color: var(--bg);
+    padding: 15px;
+    color: #333;
+    font-size: 16px;
+}
+.container {
+    max-width: 500px;
+    margin: 0 auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+h1 {
+    text-align: center;
+    font-size: 2.5rem;
+    font-family: "Brush Script MT", cursive;
+    color: var(--primary);
+    margin-bottom: 5px;
+}
+h2.subtitle {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #596858;
+}
+.price-display {
+    background: var(--secondary);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+.total-amount { font-size: 2.5rem; font-weight: bold; }
+.tabs { display: flex; gap: 5px; margin-bottom: 20px; flex-wrap: wrap; }
+.tab {
+    flex: 1;
+    padding: 12px 5px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    text-align: center;
+    font-size: 0.95rem;
+    font-weight: bold;
+}
+.tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+.section { display: none; border-top: 1px solid #eee; padding-top: 15px; }
+.section.active { display: block; }
+.field { margin-bottom: 15px; }
+label { display: block; font-size: 0.9rem; font-weight: bold; margin-bottom: 5px; color: #555; }
+input[type="text"], input[type="date"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 1rem;
+}
+input[type="number"], select {
+    width: 60px;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 0.9rem;
+    text-align: center;
+}
+.add-on-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 10px; }
+.add-on-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    flex-direction: column;
+    align-items: flex-start;
+}
+.add-on-info { font-size: 0.85rem; font-weight: 500; }
+.add-on-price { font-size: 0.8rem; color: var(--secondary); font-weight: bold; display: block; }
+.add-on-desc { font-size: 0.75rem; color: #555; margin-top: 3px; }
+button { cursor: pointer; padding: 5px 10px; margin: 0 3px; border-radius: 5px; border: none; font-weight: bold; }
+.plus { background-color: var(--primary); color: #fff; }
+.minus { background-color: #ccc; }
+.submit-btn { width: 100%; padding: 16px; background: var(--whatsapp); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; margin-top: 20px; }
+.pickup-note { font-size: 0.8rem; color: #d32f2f; font-weight: bold; text-align: center; margin-top: 15px; }
+ul { padding-left: 20px; margin-top: 5px; margin-bottom: 5px; }
+@media (max-width: 480px){
+    .tabs { flex-direction: column; }
+    input[type="number"], select { width: 50px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>KACTUS</h1>
+    <h2 class="subtitle">Your Island Sanctuary</h2>
+
+    <div class="price-display">
+        <div style="font-size: 0.9rem; opacity: 0.9;">Total Price</div>
+        <div class="total-amount" id="displayTotal">$0</div>
+    </div>
+
+    <div class="field">
+        <label>Full Name</label>
+        <input type="text" id="guestName" placeholder="Enter name">
+    </div>
+    <div class="field">
+        <label>Date</label>
+        <input type="date" id="tripDate">
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="setTab('day')">☀️ DAY PASS</div>
+        <div class="tab" onclick="setTab('water')">💦 WATER EXPERIENCE</div>
+        <div class="tab" onclick="setTab('fish')">🐟 ONLY FISHING</div>
+        <div class="tab" onclick="setTab('boat')">⛴️ RENT OUR SPEEDBOAT</div>
+    </div>
+
+    <!-- Day Pass -->
+    <div id="sec-day" class="section active">
+        <div class="field">
+            <label>Number of People</label>
+            <input type="number" id="day_pax" value="1" min="1" max="6" onchange="updatePrice()">
+            <small>1 person = $60, each extra = $45</small>
+        </div>
+        <ul>
+            <li>Welcome Drinks</li>
+            <li>Yoga Session</li>
+            <li>Creative & Movement Workshops (participate or relax)</li>
+            <li>Food & Beverage credit onsite ($16 F&B credit)</li>
+            <li>Paddleboard, Kayak & Snorkel access</li>
+            <li>Towel included</li>
+            <li>Sauna & Ice Bath</li>
+        </ul>
+        <div class="pickup-note">Speedboat pickup: 8:30am from Otres Beach – Drop off: 6:30pm</div>
+    </div>
+
+    <!-- Water Experience -->
+    <div id="sec-water" class="section">
+        <div class="field">
+            <label>Number of People (min 2 / max 6)</label>
+            <input type="number" id="w_pax" value="2" min="2" max="6" onchange="updatePrice()">
+            <small>2 people = $120, extra $30 per person</small>
+        </div>
+        <div class="field">
+            <label>Time Slot</label>
+            <select id="w_timeslot" onchange="updatePrice()" style="width:100%;">
+                <option value="1:30-5:30">1:30pm – 5:30pm</option>
+            </select>
+        </div>
+        <div>
+            <label>Extra Time (+30 mins $30)</label>
+            <button class="minus" onclick="changeTime('w', -30)">-</button>
+            <input type="number" id="w_extra_time" value="0" min="0" style="width:40px;" readonly>
+            <button class="plus" onclick="changeTime('w', 30)">+</button>
+        </div>
+        <ul>
+            <li>4 hours boating (1:30pm – 5:30pm)</li>
+            <li>Snorkel</li>
+            <li>Soft drinks & water</li>
+            <li>Seasonal fruit platter</li>
+            <li>Hand-line fishing</li>
+            <li>Bait 250g</li>
+            <li>Wakeboard / Waterski (beginner trials)</li>
+        </ul>
+        <div class="add-on-grid">
+            <div class="add-on-item">
+                <div class="add-on-info">Sunset Platter<br><span class="add-on-price">$7.5 per person</span></div>
+                <input type="number" id="w_sunset" value="0" min="0" style="width:50px;" onchange="updatePrice()">
+                <div class="add-on-desc">Selection of feta, blue cheese, cheddar, artisan bread, garlic naan, humus, apricots, cranberry, nuts – always delicious.</div>
+            </div>
+            <div class="add-on-item">
+                <div class="add-on-info">Beer Case<br><span class="add-on-price">$30 per case</span></div>
+                <input type="number" id="w_beer" value="0" min="0" style="width:50px;" onchange="updatePrice()">
+            </div>
+            <div class="add-on-item">
+                <div class="add-on-info">Wine Bottle<br><span class="add-on-price">$18 per bottle</span></div>
+                <input type="number" id="w_wine" value="0" min="0" style="width:50px;" onchange="updatePrice()">
+            </div>
+        </div>
+    </div>
+
+    <!-- Only Fishing -->
+    <div id="sec-fish" class="section">
+        <div class="field">
+            <label>Number of People (min 1 / max 5)</label>
+            <input type="number" id="f_pax" value="1" min="1" max="5" onchange="updatePrice()">
+            <small>$190 up to 2 people, +$40 per extra person</small>
+        </div>
+        <div class="field">
+            <label>Time Slot</label>
+            <select id="f_timeslot" onchange="updatePrice()" style="width:100%;">
+                <option value="am">6:30am – 10:30am</option>
+                <option value="pm">1:30pm – 5:30pm</option>
+            </select>
+        </div>
+        <div>
+            <label>Extra Time (+30 mins $40)</label>
+            <button class="minus" onclick="changeTime('f', -30)">-</button>
+            <input type="number" id="f_extra_time" value="0" min="0" style="width:40px;" readonly>
+            <button class="plus" onclick="changeTime('f', 30)">+</button>
+        </div>
+        <ul>
+            <li>Specialist fisherman</li>
+            <li>Sonar fishing radar</li>
+            <li>Catch every time!</li>
+            <li>Fishing gear (rods, lines, lures, hooks)</li>
+            <li>Bait 100g per person</li>
+        </ul>
+        <div class="add-on-grid">
+            <div class="add-on-item">
+                <div class="add-on-info">Sunset Platter<br><span class="add-on-price">$7.5 per person</span></div>
+                <input type="number" id="f_sunset" value="0" min="0" style="width:50px;" onchange="updatePrice()">
+                <div class="add-on-desc">Selection of feta, blue cheese, cheddar, artisan bread, garlic naan, humus, apricots, cranberry, nuts – always delicious.</div>
+            </div>
+            <div class="add-on-item">
+                <div class="add-on-info">Beer Case<br><span class="add-on-price">$30 per case</span></div>
+                <input type="number" id="f_beer" value="0" min="0" style="width:50px;" onchange="updatePrice()">
+            </div>
+            <div class="add-on-item">
+                <div class="add-on-info">Wine Bottle<br><span class="add-on-price">$18 per bottle</span></div>
+                <input type="number" id="f_wine" value="0" min="0" style="width:50px;" onchange="updatePrice()">
+            </div>
+        </div>
+    </div>
+
+    <!-- Rent Our Speedboat -->
+    <div id="sec-boat" class="section">
+        <div class="field">
+            <label>Number of People (max 6, $220 for 4 hours)</label>
+            <input type="number" id="b_pax" value="1" min="1" max="6" onchange="updatePrice()">
+        </div>
+        <div>
+            <label>Extra Time (+30 mins $30)</label>
+            <button class="minus" onclick="changeTime('b', -30)">-</button>
+            <input type="number" id="b_extra_time" value="0" min="0" style="width:40px;" readonly>
+            <button class="plus" onclick="changeTime('b', 30)">+</button>
+        </div>
+        <ul>
+            <li>Captain and fuel included</li>
+            <li>Go where you want, bring what you need</li>
+        </ul>
+        <div class="add-on-grid">
+            <div class="add-on-item">
+                <div class="add-on-info">Snorkel<br><span class="add-on-price">$5 each</span></div>
+                <input type="number" id="b_snorkel" value="0" min="0" max="6" style="width:50px;" onchange="updatePrice()">
+            </div>
+            <div class="add-on-item">
+                <div class="add-on-info">Fishing Rod<br><span class="add-on-price">$5 each</span></div>
+                <input type="number" id="b_rod" value="0" min="0" max="6" style="width:50px;" onchange="updatePrice()">
+            </div>
+            <div class="add-on-item">
+                <div class="add-on-info">Bait<br><span class="add-on-price">$5 per 100g</span></div>
+                <input type="number" id="b_bait" value="0" min="0" style="width:50px;" onchange="updatePrice()">
+            </div>
+            <div class="add-on-item">
+                <div class="add-on-info">Wakeboard<br><span class="add-on-price">$60</span></div>
+                <input type="number" id="b_wake" value="0" min="0" max="6" style="width:50px;" onchange="updatePrice()">
+            </div>
+            <div class="add-on-item">
+                <div class="add-on-info">Water Ski<br><span class="add-on-price">$60</span></div>
+                <input type="number" id="b_ski" value="0" min="0" max="6" style="width:50px;" onchange="updatePrice()">
+            </div>
+        </div>
+    </div>
+
+    <button class="submit-btn" onclick="sendWhatsApp()">WhatsApp Booking</button>
+</div>
+
+<script>
+let currentMode = 'day';
+
+function setTab(mode) {
+    currentMode = mode;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('sec-' + mode).classList.add('active');
+    updatePrice();
+}
+
+function changeTime(type, delta) {
+    let input = document.getElementById(type + '_extra_time');
+    let newVal = parseInt(input.value) + delta;
+    if(newVal < 0) newVal = 0;
+    input.value = newVal;
+    updatePrice();
+}
+
+function updatePrice() {
+    let total = 0;
+    if(currentMode === 'day') {
+        let pax = parseInt(document.getElementById('day_pax').value);
+        total = 60; // first person
+        if(pax>1) total += (pax-1)*45;
+    }
+    else if(currentMode === 'water') {
+        let pax = parseInt(document.getElementById('w_pax').value);
+        total = 120; // min 2 people
+        if(pax>2) total += (pax-2)*30; // +30 per extra
+        total += parseInt(document.getElementById('w_extra_time').value)/30*30;
+        total += parseInt(document.getElementById('w_sunset').value)*7.5;
+        total += parseInt(document.getElementById('w_beer').value)*30;
+        total += parseInt(document.getElementById('w_wine').value)*18;
+    }
+    else if(currentMode === 'fish') {
+        let pax = parseInt(document.getElementById('f_pax').value);
+        total = 190; // up to 2 people
+        if(pax>2) total += (pax-2)*40;
+        total += parseInt(document.getElementById('f_extra_time').value)/30*40;
+                total += parseInt(document.getElementById('f_sunset').value)*7.5;
+        total += parseInt(document.getElementById('f_beer').value)*30;
+        total += parseInt(document.getElementById('f_wine').value)*18;
+    }
+    else if(currentMode === 'boat') {
+        let pax = parseInt(document.getElementById('b_pax').value);
+        total = 220; // base 4 hours
+        total += parseInt(document.getElementById('b_extra_time').value)/30*30;
+        total += parseInt(document.getElementById('b_snorkel').value)*5;
+        total += parseInt(document.getElementById('b_rod').value)*5;
+        total += parseInt(document.getElementById('b_bait').value)*5;
+        total += parseInt(document.getElementById('b_wake').value)*60;
+        total += parseInt(document.getElementById('b_ski').value)*60;
+    }
+    document.getElementById('displayTotal').innerText = '$' + total.toFixed(2);
+}
+
+function sendWhatsApp() {
+    const name = document.getElementById('guestName').value || '—';
+    const date = document.getElementById('tripDate').value || '—';
+    const total = document.getElementById('displayTotal').innerText;
+
+    let msg = `🌴 KACTUS BOAT BOOKING 🌴\n\n`;
+    msg += `Name: ${name}\n`;
+    msg += `Date: ${date}\n\n`;
+
+    if(currentMode === 'day') {
+        let pax = parseInt(document.getElementById('day_pax').value);
+        msg += `☀️ DAY PASS\n`;
+        msg += `People: ${pax}\n`;
+        msg += `Pickup: 8:30am Otres Beach\nDrop-off: 6:30pm\n\n`;
+        msg += `Included:\n`;
+        msg += `• Welcome Drinks\n• Yoga 2x/day\n• Creative & Movement Workshops\n• F&B credit $16\n• Paddleboard, Kayak & Snorkel access\n• Towel\n• Sauna & Ice Bath\n\n`;
+    }
+    else if(currentMode === 'water') {
+        let pax = parseInt(document.getElementById('w_pax').value);
+        msg += `💦 WATER EXPERIENCE\n`;
+        msg += `People: ${pax}\n`;
+        msg += `Time Slot: ${document.getElementById('w_timeslot').value}\n`;
+        msg += `Extra 30min blocks: ${document.getElementById('w_extra_time').value}\n\n`;
+        msg += `Add-ons:\n`;
+        msg += `• Sunset Platter: ${document.getElementById('w_sunset').value} person(s)\n`;
+        msg += `• Beer Cases: ${document.getElementById('w_beer').value}\n`;
+        msg += `• Wine Bottles: ${document.getElementById('w_wine').value}\n\n`;
+    }
+    else if(currentMode === 'fish') {
+        let pax = parseInt(document.getElementById('f_pax').value);
+        msg += `🐟 ONLY FISHING\n`;
+        msg += `People: ${pax}\n`;
+        msg += `Time Slot: ${document.getElementById('f_timeslot').value}\n`;
+        msg += `Extra 30min blocks: ${document.getElementById('f_extra_time').value}\n\n`;
+        msg += `Add-ons:\n`;
+        msg += `• Sunset Platter: ${document.getElementById('f_sunset').value} person(s)\n`;
+        msg += `• Beer Cases: ${document.getElementById('f_beer').value}\n`;
+        msg += `• Wine Bottles: ${document.getElementById('f_wine').value}\n\n`;
+    }
+    else if(currentMode === 'boat') {
+        let pax = parseInt(document.getElementById('b_pax').value);
+        msg += `⛴️ RENT OUR SPEEDBOAT\n`;
+        msg += `People: ${pax}\n`;
+        msg += `Extra 30min blocks: ${document.getElementById('b_extra_time').value}\n\n`;
+        msg += `Add-ons:\n`;
+        msg += `• Snorkels: ${document.getElementById('b_snorkel').value}\n`;
+        msg += `• Fishing Rods: ${document.getElementById('b_rod').value}\n`;
+        msg += `• Bait (100g units): ${document.getElementById('b_bait').value}\n`;
+        msg += `• Wakeboard: ${document.getElementById('b_wake').value}\n`;
+        msg += `• Water Ski: ${document.getElementById('b_ski').value}\n\n`;
+    }
+
+    msg += `💰 TOTAL: ${total}\n\n`;
+    msg += `Please confirm availability 🙏`;
+
+    window.open(
+        `https://wa.me/855962683069?text=${encodeURIComponent(msg)}`,
+        '_blank'
+    );
+}
+
+// Initialize total
+updatePrice();
+</script>
+</body>
+</html>
